@@ -1,8 +1,9 @@
 @import "tailwindcss";
+@import 'primeicons/primeicons.css';
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000000;
 }
 
 @theme inline {
@@ -14,7 +15,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #000000;
     --foreground: #ededed;
   }
 }
@@ -23,4 +24,43 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.TopDash .topdash-content{
+  background-color: #1f1f1f;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 20px; 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+}
+
+.TopDash .left {
+  font-weight: bold;
+  color: rgb(40, 161, 165);
+  font-size: 2rem;
+}
+
+.TopDash .right {
+  font-weight: bold;
+  color: rgb(40, 161, 165);
+  font-size: 2rem;
+}
+
+.p-tooltip .p-tooltip-text {
+  color: rgb(0, 0, 0);
+}
+
+.custom-choose-btn{
+  color:rgb(40, 161, 165);
+}
+
+.custom-upload-btn{
+  color:rgb(40, 161, 165);
+}
+
+.custom-cancel-btn{
+  color:rgb(40, 161, 165);
 }
