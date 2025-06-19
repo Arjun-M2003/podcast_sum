@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { JSX, useRef, useState } from 'react';
 import { Upload, FolderOpen, X } from 'lucide-react';
 import { Toast } from 'primereact/toast';
 import { FileUpload, FileUploadSelectEvent, FileUploadUploadEvent, FileUploadRemoveEvent, FileUploadHeaderTemplateOptions } from 'primereact/fileupload';
@@ -17,6 +17,7 @@ interface FileWithObjectURL extends File {
 interface ItemTemplateProps {
     formatSize: string;
     onRemove: () => void;
+    progress: number;
 }
 
 export default function TemplateDemo(): JSX.Element {
@@ -25,11 +26,11 @@ export default function TemplateDemo(): JSX.Element {
     const fileUploadRef = useRef<FileUpload>(null);
     
     const onTemplateSelect = (e: FileUploadSelectEvent): void => {
-        let _totalSize = totalSize;
         const files = e.files;
 
-        Object.keys(files).forEach((key) => {
-            _totalSize += files[key].size || 0;
+        let _totalSize = totalSize;
+        files.forEach((file) => {
+            _totalSize += file.size || 0;
         });
 
         setTotalSize(_totalSize);
