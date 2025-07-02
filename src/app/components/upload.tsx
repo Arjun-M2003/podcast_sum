@@ -3,7 +3,7 @@
 import React, { JSX, useRef, useState } from 'react';
 import { Upload, FolderOpen, X } from 'lucide-react';
 import { Toast } from 'primereact/toast';
-import { FileUpload, FileUploadSelectEvent, FileUploadUploadEvent, FileUploadRemoveEvent, FileUploadHeaderTemplateOptions } from 'primereact/fileupload';
+import { FileUpload, FileUploadSelectEvent, FileUploadUploadEvent, FileUploadRemoveEvent, FileUploadHeaderTemplateOptions, ItemTemplateOptions } from 'primereact/fileupload';
 import { ProgressBar } from 'primereact/progressbar';
 import { Button } from 'primereact/button';
 import { Tooltip } from 'primereact/tooltip';
@@ -51,7 +51,7 @@ export default function TemplateDemo(): JSX.Element {
         });
     };
 
-    const onTemplateRemove = (file: File, callback: () => void): void => {
+    const onTemplateRemove = (file: File, callback: (...args: any[]) => void): void => {
         setTotalSize(totalSize - file.size);
         callback();
     };
@@ -121,9 +121,11 @@ export default function TemplateDemo(): JSX.Element {
         return 'pi pi-file';
     };
 
-    const itemTemplate = (file: FileWithObjectURL, props: ItemTemplateProps): JSX.Element => {
-        const fileIcon = getFileTypeIcon(file);
-        const isVideo = file.type.startsWith('video/');
+    const itemTemplate = (file: object, props: ItemTemplateOptions): JSX.Element => {
+        const typedFile = file as FileWithObjectURL;
+        const fileIcon = getFileTypeIcon(typedFile);
+        const isVideo = typedFile.type?.startsWith('video/');
+
         
         return (
             <div style={{
@@ -139,9 +141,9 @@ export default function TemplateDemo(): JSX.Element {
                     flex: '1',
                     gap: '1rem'
                 }}>
-                    {isVideo && file.objectURL ? (
+                    {isVideo && typedFile.objectURL ? (
                         <video 
-                            src={file.objectURL} 
+                            src={typedFile.objectURL} 
                             width={80} 
                             height={60}
                             style={{ 
@@ -180,7 +182,7 @@ export default function TemplateDemo(): JSX.Element {
                             color: '#495057',
                             fontSize: '0.9rem'
                         }}>
-                            {file.name}
+                            {typedFile.name}
                         </span>
                         <small style={{ 
                             color: '#6c757d',
@@ -215,7 +217,7 @@ export default function TemplateDemo(): JSX.Element {
                             width: '2rem',
                             height: '2rem'
                         }}
-                        onClick={() => onTemplateRemove(file, props.onRemove)} 
+                        onClick={() => onTemplateRemove(typedFile, props.onRemove)} 
                     />
                 </div>
             </div>
@@ -351,7 +353,7 @@ export default function TemplateDemo(): JSX.Element {
             }}>
                 <FileUpload 
                     ref={fileUploadRef} 
-                    name="podcast[]" 
+                    name="podcast" 
                     url="/api/upload" 
                     multiple 
                     accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.mp4,.mov,.avi,.mkv,.webm"
