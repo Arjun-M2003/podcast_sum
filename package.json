@@ -8,12 +8,18 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build:backend": "tsc --project backend/tsconfig.json ",
-    "start:backend": "node dist-backend/index.js"
+    "dev:backend": "tsx watch backend/index.ts",
+    "build:backend": "tsc --project backend/tsconfig.json && npm run copy:backend-assets",
+    "copy:backend-assets": "cp backend/package.json dist-backend/ 2>/dev/null || true",
+    "start:backend": "node dist-backend/index.js",
+    "build:all": "npm run build:backend && npm run build",
+    "clean": "rm -rf dist-backend .next",
+    "type-check": "tsc --noEmit",
+    "type-check:backend": "tsc --noEmit --project backend/tsconfig.json"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.832.0",
-    "aws-sdk": "^2.1692.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "lucide-react": "^0.517.0",
@@ -28,7 +34,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/aws-sdk": "^0.0.42",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/multer": "^1.4.13",
     "@types/node": "^20",
@@ -38,7 +44,8 @@
     "eslint-config-next": "15.3.3",
     "open": "^10.1.2",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
+    "typescript": "^5"
   }
 }
