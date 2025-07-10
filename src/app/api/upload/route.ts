@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     
     // Generate S3 key
-    const s3Key = `${Date.now()}_${file.name}`;
+    const s3Key = `podcast/${Date.now()}_${file.name}`;
     
     console.log('Attempting to upload to S3...');
     console.log('S3 Key:', s3Key);
