@@ -60,7 +60,7 @@ export default function SummaryDisplay({ podcast }: SummaryDisplayProps) {
     try {
       console.log('Starting summarization...');
       
-      const response = await fetch('/api/summarize', {
+      const response = await fetch('http://localhost:8000/api/summarize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

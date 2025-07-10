@@ -20,10 +20,16 @@
 
 # production
 /build
+docker-compose.yml
+
+#cache
+/src/backend/__pycache__
+/src/backend/cache
 
 # misc
 .DS_Store
 *.pem
+/src/backend/requirements.txt
 
 # debug
 npm-debug.log*
