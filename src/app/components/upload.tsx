@@ -20,7 +20,22 @@ interface ItemTemplateProps {
     progress: number;
 }
 
-export default function TemplateDemo(): JSX.Element {
+interface PodcastData {
+    id: string;
+    title: string;
+    s3Key: string;
+    s3url: string;
+    format: 'audio' | 'video';
+    durationSeconds?: number;
+    description?: string;
+    CreatedAt: Date;
+}
+
+interface UploadProps {
+    onUploadSuccess?: (podcastData: PodcastData) => void;
+}
+
+export default function TemplateDemo({ onUploadSuccess }: UploadProps): JSX.Element {
     const toast = useRef<Toast>(null);
     const [totalSize, setTotalSize] = useState<number>(0);
     const fileUploadRef = useRef<FileUpload>(null);
@@ -44,11 +59,34 @@ export default function TemplateDemo(): JSX.Element {
         });
 
         setTotalSize(_totalSize);
-        toast.current?.show({ 
-            severity: 'info', 
-            summary: 'Success', 
-            detail: 'File Uploaded' 
-        });
+        
+        // Handle the upload response
+        if (e.xhr && e.xhr.response) {
+            try {
+                const response = JSON.parse(e.xhr.response);
+                if (onUploadSuccess) {
+                    onUploadSuccess(response);
+                }
+                toast.current?.show({ 
+                    severity: 'success', 
+                    summary: 'Success', 
+                    detail: 'File uploaded successfully!' 
+                });
+            } catch (error) {
+                console.error('Error parsing upload response:', error);
+                toast.current?.show({ 
+                    severity: 'error', 
+                    summary: 'Error', 
+                    detail: 'Upload completed but failed to process response' 
+                });
+            }
+        } else {
+            toast.current?.show({ 
+                severity: 'success', 
+                summary: 'Success', 
+                detail: 'File uploaded successfully!' 
+            });
+        }
     };
 
     const onTemplateRemove = (file: File, callback: (...args: any[]) => void): void => {
@@ -58,6 +96,15 @@ export default function TemplateDemo(): JSX.Element {
 
     const onTemplateClear = (): void => {
         setTotalSize(0);
+    };
+
+    const onTemplateError = (e: any): void => {
+        console.error('Upload error:', e);
+        toast.current?.show({ 
+            severity: 'error', 
+            summary: 'Upload Error', 
+            detail: 'Failed to upload file. Please try again.' 
+        });
     };
 
     const headerTemplate = (options: FileUploadHeaderTemplateOptions): JSX.Element => {
@@ -360,7 +407,7 @@ export default function TemplateDemo(): JSX.Element {
                     maxFileSize={500000000}
                     onUpload={onTemplateUpload} 
                     onSelect={onTemplateSelect} 
-                    onError={onTemplateClear} 
+                    onError={onTemplateError} 
                     onClear={onTemplateClear}
                     headerTemplate={headerTemplate} 
                     itemTemplate={itemTemplate} 
