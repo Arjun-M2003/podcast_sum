@@ -5,6 +5,13 @@ import { PodcastSchema } from '@/lib/models/podcast';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== DEBUGGING S3 UPLOAD ===');
+    console.log('AWS_REGION:', AWS_REGION);
+    console.log('S3_BUCKET_NAME:', S3_BUCKET_NAME);
+    console.log('AWS_ACCESS_KEY_ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
+    console.log('AWS_SECRET_ACCESS_KEY exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
+    console.log('AWS_ACCESS_KEY_ID starts with:', process.env.AWS_ACCESS_KEY_ID?.substring(0, 4));
+    
     const formData = await request.formData();
     const file = formData.get('podcast') as File;
     
@@ -34,7 +41,12 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     
     // Generate S3 key
-    const s3Key = `podcasts/${Date.now()}_${file.name}`;
+    const s3Key = `${Date.now()}_${file.name}`;
+    
+    console.log('Attempting to upload to S3...');
+    console.log('S3 Key:', s3Key);
+    console.log('File size:', file.size);
+    console.log('File type:', file.type);
     
     // Upload to S3
     const params = {
@@ -44,7 +56,27 @@ export async function POST(request: NextRequest) {
       ContentType: file.type,
     };
 
-    await s3.send(new PutObjectCommand(params));
+    console.log('S3 params:', {
+      Bucket: params.Bucket,
+      Key: params.Key,
+      ContentType: params.ContentType,
+      BodyLength: buffer.length
+    });
+
+    try {
+      const result = await s3.send(new PutObjectCommand(params));
+      console.log('S3 upload successful:', result);
+    } catch (s3Error) {
+      console.error('S3 upload failed:', s3Error);
+      console.error('Error details:', {
+        name: s3Error.name,
+        message: s3Error.message,
+        code: s3Error.Code,
+        statusCode: s3Error.$metadata?.httpStatusCode,
+        requestId: s3Error.$metadata?.requestId,
+      });
+      throw s3Error;
+    }
 
     // Get additional form data
     const title = formData.get('title') as string;
@@ -72,6 +104,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    console.log('Upload completed successfully');
     return NextResponse.json(parsed.data, { status: 201 });
   } catch (error) {
     console.error('Error uploading podcast:', error);
