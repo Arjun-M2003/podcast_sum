@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3, S3_BUCKET_NAME, AWS_REGION } from '@/lib/utils/s3';
 import { PodcastSchema } from '@/lib/models/podcast';
 
@@ -10,7 +11,6 @@ export async function POST(request: NextRequest) {
     console.log('S3_BUCKET_NAME:', S3_BUCKET_NAME);
     console.log('AWS_ACCESS_KEY_ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
     console.log('AWS_SECRET_ACCESS_KEY exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
-    console.log('AWS_ACCESS_KEY_ID starts with:', process.env.AWS_ACCESS_KEY_ID?.substring(0, 4));
     
     const formData = await request.formData();
     const file = formData.get('podcast') as File;
@@ -56,27 +56,27 @@ export async function POST(request: NextRequest) {
       ContentType: file.type,
     };
 
-    console.log('S3 params:', {
-      Bucket: params.Bucket,
-      Key: params.Key,
-      ContentType: params.ContentType,
-      BodyLength: buffer.length
-    });
-
     try {
       const result = await s3.send(new PutObjectCommand(params));
       console.log('S3 upload successful:', result);
     } catch (s3Error) {
       console.error('S3 upload failed:', s3Error);
-      console.error('Error details:', {
-        name: s3Error.name,
-        message: s3Error.message,
-        code: s3Error.Code,
-        statusCode: s3Error.$metadata?.httpStatusCode,
-        requestId: s3Error.$metadata?.requestId,
-      });
       throw s3Error;
     }
+
+    // Generate pre-signed URL for download (valid for 1 hour)
+    const getObjectParams = {
+      Bucket: S3_BUCKET_NAME,
+      Key: s3Key,
+    };
+
+    const presignedUrl = await getSignedUrl(
+      s3,
+      new GetObjectCommand(getObjectParams),
+      { expiresIn: 3600 } // 1 hour
+    );
+
+    console.log('Generated pre-signed URL for download');
 
     // Get additional form data
     const title = formData.get('title') as string;
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       id: s3Key,
       title: title || file.name,
       s3Key,
-      s3url: `https://${S3_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${s3Key}`,
+      s3url: presignedUrl, // Use pre-signed URL instead of direct URL
       format: file.type.startsWith('audio/') ? 'audio' : 'video' as const,
       durationSeconds: durationSeconds ? Number(durationSeconds) : undefined,
       description: description || undefined,

@@ -18,6 +18,12 @@ interface SummaryResponse {
   summary_type: string;
 }
 
+// // Add this GET method for testing
+// export async function GET() {
+//   console.log('=== SUMMARIZE GET TEST ===');
+//   return NextResponse.json({ message: 'Summarize endpoint is working!' });
+// }
+
 export async function POST(request: NextRequest) {
   try {
     console.log('=== SUMMARIZE API CALL ===');
